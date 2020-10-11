@@ -5,11 +5,9 @@ const app = express();
 const server = http.createServer(app);
 const io = socket(server);
 const fs = require('fs');
-//const { response } = require('express');
 
 app.use('/css', express.static('./wwwroot/css'));
 app.use('/js', express.static('./wwwroot/js'));
-
 app.get('/', (req, res) => {
     fs.readFile('./wwwroot/index.html', (err, data) => {
         if (err) {
@@ -23,10 +21,46 @@ app.get('/', (req, res) => {
     });
 });
 
+global.rooms = [];
+
 io.sockets.on('connection', (socket) => {
     console.log('connected');
 
-    socket.on('enter', () => {
+    socket.on('enter', (room) => {
+        if (room) {
+            for (let i in global.rooms) {
+                if (global.rooms[i].name === room) {
+                    if (global.rooms[i].count < 2)
+                        global.rooms[i].count += 1;
+                    else
+                        console.log('full');
+                    break;
+                }
+            }
+        }
+        else {
+            let alphabets = 'abcdefghijklmnopqrstuvwxyz'
+            let name = '';
+
+            for (let i = 0; i < 5; i += 1) {
+                let ranNum = Math.floor(Math.random() * alphabets.length);
+                name += alphabets[ranNum];
+            }
+
+            room = name + (global.rooms.length + 1);
+
+            global.rooms.push({
+                name: room,
+                count: 1
+            });
+        }
+
+        console.log('enter ' + room);
+        console.log(global.rooms);
+
+        socket.room = room;
+        socket.join(socket.room);
+
         if (!global.number) {
             global.number = 1;
             socket.name = 'black'
@@ -36,8 +70,9 @@ io.sockets.on('connection', (socket) => {
             socket.name = 'white';
         }
 
-        io.sockets.emit('update', {
+        io.sockets.to(socket.room).emit('update', {
             name: 'connect',
+            room: socket.room,
             player: socket.name,
             turn: 'black'
         });
@@ -45,24 +80,42 @@ io.sockets.on('connection', (socket) => {
         if (global.number > 1) {
             delete global.number;
 
-            io.sockets.emit('update', {
-                name: 'start'
+            io.sockets.to(socket.room).emit('update', {
+                name: 'start',
+                room: socket.room
             });
         }
     });
 
-    socket.on('request', (data) => {
-        //data.name = socket.name;
-        console.log(data);
-        //socket.broadcast.emit('update', data);
-        io.sockets.emit('update', data);
+    socket.on('request', (value) => {
+        console.log(value);
+
+        io.sockets.to(socket.room).emit('update', {
+            name: 'response',
+            room: socket.room,
+            value: value
+        });
     });
 
     socket.on('disconnect', () => {
-        let value = 'closed: ' + socket.name;
-        io.sockets.emit('update', {
+        console.log('disconnect');
+
+        for (let i in global.rooms) {
+            if (global.rooms[i].name === socket.room) {
+                global.rooms[i].count -= 1;
+
+                if (!global.rooms[i].count)
+                    global.rooms.splice(i, 1);
+
+                console.log(global.rooms);
+                break;
+            }
+        }
+
+        io.sockets.to(socket.room).emit('update', {
             name: 'disconnect',
-            val1: value
+            room: socket.room,
+            val1: 'closed: ' + socket.name
         });
     });
 });
