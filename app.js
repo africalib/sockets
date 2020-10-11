@@ -33,7 +33,7 @@ io.sockets.on('connection', (socket) => {
                     if (global.rooms[i].count < 2)
                         global.rooms[i].count += 1;
                     else
-                        console.log('full');
+                        console.log('the room is full.');
                     break;
                 }
             }
@@ -42,9 +42,9 @@ io.sockets.on('connection', (socket) => {
             let alphabets = 'abcdefghijklmnopqrstuvwxyz'
             let name = '';
 
-            for (let i = 0; i < 5; i += 1) {
+            for (let i = 0; i < 7; i += 1) {
                 let ranNum = Math.floor(Math.random() * alphabets.length);
-                name += alphabets[ranNum];
+                name += (Math.random() >= 0.5 ? alphabets[ranNum].toUpperCase() : alphabets[ranNum]) + (Math.random() >= 0.5 ? ranNum : i);
             }
 
             room = name + (global.rooms.length + 1);
