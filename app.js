@@ -6,6 +6,8 @@ const server = http.createServer(app);
 const io = socket(server);
 const fs = require('fs');
 
+global.rooms = [];
+
 app.use('/css', express.static('./wwwroot/css'));
 app.use('/js', express.static('./wwwroot/js'));
 app.get('/', (req, res) => {
@@ -21,19 +23,59 @@ app.get('/', (req, res) => {
     });
 });
 
-global.rooms = [];
+app.all('/*', function (req, res, next) {
+    res.header("Access-Control-Allow-Origin", "*");
+    res.header("Access-Control-Allow-Headers", "X-Requested-With");
+    next();
+});
+
+app.get('/rooms', (req, res) => {
+    var rooms = [];
+
+    for (var i in global.rooms) {
+        if (!global.rooms[i].playing)
+            rooms.push(global.rooms[i]);
+    }
+
+    res.write(JSON.stringify(rooms));
+    res.end()
+});
 
 io.sockets.on('connection', (socket) => {
     console.log('connected');
 
-    socket.on('enter', (room) => {
-        if (room) {
+    socket.on('enter', (name) => {
+        var connect = function (name) {
+            socket.room = name;
+            socket.join(socket.room);
+
+            io.sockets.to(socket.room).emit('update', {
+                name: 'connect',
+                room: socket.room,
+                player: socket.name,
+                turn: 'black'
+            });
+        }
+
+        if (name) {
             for (let i in global.rooms) {
-                if (global.rooms[i].name === room) {
-                    if (global.rooms[i].count < 2)
+                if (global.rooms[i].name === name) {
+                    if (global.rooms[i].count < 2) {
                         global.rooms[i].count += 1;
-                    else
+                        global.rooms[i].playing = true;
+
+                        socket.name = 'white';
+                        connect(name);
+                        
+                        io.sockets.to(socket.room).emit('update', {
+                            name: 'start',
+                            room: socket.room
+                        });
+                    }
+                    else {
                         console.log('the room is full.');
+                        return;
+                    }
                     break;
                 }
             }
@@ -47,48 +89,21 @@ io.sockets.on('connection', (socket) => {
                 name += (Math.random() >= 0.5 ? alphabets[ranNum].toUpperCase() : alphabets[ranNum]) + (Math.random() >= 0.5 ? ranNum : i);
             }
 
-            room = name + (global.rooms.length + 1);
+            name = name + (global.rooms.length + 1);
 
             global.rooms.push({
-                name: room,
-                count: 1
+                name: name,
+                count: 1,
+                playing: false
             });
-        }
 
-        console.log('enter ' + room);
-        console.log(global.rooms);
-
-        socket.room = room;
-        socket.join(socket.room);
-
-        if (!global.number) {
-            global.number = 1;
-            socket.name = 'black'
-        }
-        else {
-            global.number += 1;
-            socket.name = 'white';
-        }
-
-        io.sockets.to(socket.room).emit('update', {
-            name: 'connect',
-            room: socket.room,
-            player: socket.name,
-            turn: 'black'
-        });
-
-        if (global.number > 1) {
-            delete global.number;
-
-            io.sockets.to(socket.room).emit('update', {
-                name: 'start',
-                room: socket.room
-            });
+            socket.name = 'black';
+            connect(name);
         }
     });
 
     socket.on('request', (value) => {
-        console.log(value);
+        //console.log(value);
 
         io.sockets.to(socket.room).emit('update', {
             name: 'response',
@@ -107,7 +122,7 @@ io.sockets.on('connection', (socket) => {
                 if (!global.rooms[i].count)
                     global.rooms.splice(i, 1);
 
-                console.log(global.rooms);
+                //console.log(global.rooms);
                 break;
             }
         }
