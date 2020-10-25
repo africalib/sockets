@@ -52,7 +52,7 @@ io.sockets.on('connection', (socket) => {
             io.sockets.to(socket.room).emit('update', {
                 name: 'connect',
                 room: socket.room,
-                player: socket.name,
+                player: socket.player,
                 turn: 'black'
             });
         }
@@ -64,9 +64,9 @@ io.sockets.on('connection', (socket) => {
                         global.rooms[i].count += 1;
                         global.rooms[i].playing = true;
 
-                        socket.name = 'white';
+                        socket.player = 'white';
                         connect(name);
-                        
+
                         io.sockets.to(socket.room).emit('update', {
                             name: 'start',
                             room: socket.room
@@ -97,7 +97,7 @@ io.sockets.on('connection', (socket) => {
                 playing: false
             });
 
-            socket.name = 'black';
+            socket.player = 'black';
             connect(name);
         }
     });
@@ -130,7 +130,7 @@ io.sockets.on('connection', (socket) => {
         io.sockets.to(socket.room).emit('update', {
             name: 'disconnect',
             room: socket.room,
-            val1: 'closed: ' + socket.name
+            val1: 'closed: ' + socket.player
         });
     });
 });
