@@ -55,7 +55,18 @@ io.sockets.on('connection', (socket) => {
                 player: socket.player,
                 turn: 'black'
             });
-        }
+        };
+
+        var make = function (name) {
+            global.rooms.push({
+                name: name,
+                count: 1,
+                playing: false
+            });
+
+            socket.player = 'black';
+            connect(name);
+        };
 
         if (name) {
             for (let i in global.rooms) {
@@ -71,14 +82,17 @@ io.sockets.on('connection', (socket) => {
                             name: 'start',
                             room: socket.room
                         });
+
+                        return;
                     }
                     else {
                         console.log('the room is full.');
                         return;
                     }
-                    break;
                 }
             }
+
+            make(name);
         }
         else {
             let alphabets = 'abcdefghijklmnopqrstuvwxyz'
@@ -90,15 +104,7 @@ io.sockets.on('connection', (socket) => {
             }
 
             name = name + (global.rooms.length + 1);
-
-            global.rooms.push({
-                name: name,
-                count: 1,
-                playing: false
-            });
-
-            socket.player = 'black';
-            connect(name);
+            make(name);
         }
     });
 
