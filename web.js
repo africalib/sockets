@@ -13,7 +13,7 @@ app.use('/js', express.static('./wwwroot/js'));
 app.get('/', (req, res) => {
     fs.readFile('./wwwroot/index.html', (err, data) => {
         if (err) {
-            res.send('error');
+            res.send('error2');
         }
         else {
             res.writeHead(200, { 'Content-Type': 'text/html' });
