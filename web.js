@@ -8,8 +8,7 @@ const fs = require('fs');
 
 global.rooms = [];
 
-app.use('/css', express.static('./wwwroot/css'));
-app.use('/js', express.static('./wwwroot/js'));
+app.use(express.static(__dirname + '/wwwroot'));
 app.get('/', (req, res) => {
     fs.readFile('./wwwroot/index.html', (err, data) => {
         if (err) {
