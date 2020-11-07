@@ -9,6 +9,8 @@ const options = {
 const express = require('express');
 const app = express();
 const socket = require('socket.io');
+const protocol = 'http';
+let server, io;
 
 global.rooms = [];
 
@@ -44,9 +46,8 @@ app.get('/rooms', (req, res) => {
     res.end()
 });
 
-var httpServer = http.createServer(app);
-var httpsServer = https.createServer(options, app);
-const io = socket(httpsServer);
+server = protocol === 'http' ? http.createServer(app) : https.createServer(options, app);
+io = socket(server);
 
 io.sockets.on('connection', (socket) => {
     console.log('connected');
@@ -148,12 +149,6 @@ io.sockets.on('connection', (socket) => {
     });
 });
 
-// httpServer.listen(8001, () => {
-//     console.log('---');
-//     console.log('http server is running ' + new Date());
-// });
-
-httpsServer.listen(8001, () => {
-    console.log('---');
-    console.log('https server is running ' + new Date());
+server.listen(8001, () => {
+    console.log('server is running ' + new Date());
 });
