@@ -148,12 +148,12 @@ io.sockets.on('connection', (socket) => {
     });
 });
 
-httpServer.listen(8001, () => {
-    console.log('---');
-    console.log('http server is running ' + new Date());
-});
+// httpServer.listen(8001, () => {
+//     console.log('---');
+//     console.log('http server is running ' + new Date());
+// });
 
-httpsServer.listen(8002, () => {
+httpsServer.listen(8001, () => {
     console.log('---');
     console.log('https server is running ' + new Date());
 });
