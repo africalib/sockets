@@ -9,9 +9,6 @@ const options = {
     cert: fs.readFileSync(__dirname + '/ssl/certificate.crt')
 };
 
-const server = https.createServer(options, app);
-const io = socket(server);
-
 global.rooms = [];
 
 app.use(express.static(__dirname + '/wwwroot'));
@@ -45,6 +42,9 @@ app.get('/rooms', (req, res) => {
     res.write(JSON.stringify(rooms));
     res.end()
 });
+
+const server = https.createServer(options, app);
+const io = socket(server);
 
 io.sockets.on('connection', (socket) => {
     console.log('connected');
