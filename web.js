@@ -1,13 +1,14 @@
-const express = require('express');
-const socket = require('socket.io');
+const http = require('http');
 const https = require('https');
-const app = express();
 const fs = require('fs');
 const options = {
     ca: fs.readFileSync(__dirname + '/ssl/ca_bundle.crt'),
     key: fs.readFileSync(__dirname + '/ssl/private.key'),
     cert: fs.readFileSync(__dirname + '/ssl/certificate.crt')
 };
+const express = require('express');
+const app = express();
+const socket = require('socket.io');
 
 global.rooms = [];
 
@@ -43,8 +44,9 @@ app.get('/rooms', (req, res) => {
     res.end()
 });
 
-const server = https.createServer(options, app);
-const io = socket(server);
+var httpServer = http.createServer(app);
+var httpsServer = https.createServer(options, app);
+const io = socket(httpsServer);
 
 io.sockets.on('connection', (socket) => {
     console.log('connected');
@@ -146,6 +148,10 @@ io.sockets.on('connection', (socket) => {
     });
 });
 
-server.listen(8001, () => {
-    console.log('server is running ' + new Date());
+httpServer.listen(8001, () => {
+    console.log('http server is running ' + new Date());
+});
+
+httpsServer.listen(443, () => {
+    console.log('https server is running ' + new Date());
 });
