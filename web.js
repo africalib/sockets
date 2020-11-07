@@ -1,8 +1,14 @@
 const express = require('express');
 const socket = require('socket.io');
 const http = require('http');
+const https = require('https');
 const app = express();
-const server = http.createServer(app);
+const options = {
+    ca: fs.readFileSync('/ssl/ca-chain-bundle.pem'),
+    key: fs.readFileSync('/ssl/private.key'),
+    cert: fs.readFileSync('/ssl/certificate.crt')
+};
+const server = https.createServer(options, app);
 const io = socket(server);
 const fs = require('fs');
 
