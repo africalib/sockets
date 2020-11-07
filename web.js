@@ -1,16 +1,17 @@
 const express = require('express');
 const socket = require('socket.io');
-const http = require('http');
+//const http = require('http');
 const https = require('https');
 const app = express();
+const fs = require('fs');
 const options = {
-    ca: fs.readFileSync('/ssl/ca-chain-bundle.pem'),
-    key: fs.readFileSync('/ssl/private.key'),
-    cert: fs.readFileSync('/ssl/certificate.crt')
+    ca: fs.readFileSync('ssl/ca_bundle.crt'),
+    key: fs.readFileSync('ssl/private.key'),
+    cert: fs.readFileSync('ssl/certificate.crt')
 };
+
 const server = https.createServer(options, app);
 const io = socket(server);
-const fs = require('fs');
 
 global.rooms = [];
 
