@@ -12,7 +12,7 @@ app.use(express.static(__dirname + '/wwwroot'));
 app.get('/', (req, res) => {
     fs.readFile('./wwwroot/index.html', (err, data) => {
         if (err) {
-            res.send('error2');
+            res.send(JSON.stringify(err));
         }
         else {
             res.writeHead(200, { 'Content-Type': 'text/html' });
