@@ -23,6 +23,25 @@ app.get('/', (req, res) => {
     });
 });
 
+app.get('/valid', (req, res) => {	
+	for (let i in global.rooms) {
+		var room = global.rooms[i];
+		
+		if (room.name === req.query.name) {
+			if(room.playing)
+				res.write('playing');
+			else
+				res.write('valid');
+			
+			res.end();
+			return;
+		}
+	}
+	
+	res.write('empty');
+	res.end();
+});
+
 app.get('/rooms', (req, res) => {
     var rooms = [];
 
